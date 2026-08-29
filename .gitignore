@@ -1,0 +1,10 @@
+node_modules/
+uploads/
+.env
+data/
+*.bak
+*.bak*
+*.final_bak
+*_clean*
+nul
+.DS_Store

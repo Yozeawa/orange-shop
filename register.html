@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册账号 - 2b2t橘子商店</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1a1a2e;
+            color: #fff;
+            font-family: 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .register-container {
+            background: #16213e;
+            border: 2px solid #e6a817;
+            border-radius: 4px;
+            padding: 40px;
+            width: 420px;
+            max-width: 90%;
+            box-shadow: 0 0 30px rgba(230,168,23,0.2);
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo h1 {
+            font-size: 28px;
+            color: #e6a817;
+            text-shadow: 2px 2px 0 #000;
+        }
+        .logo p {
+            color: #888;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            background: #0f0f23;
+            border: 1px solid #333;
+            border-radius: 3px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus {
+            border-color: #e6a817;
+        }
+        .btn {
+            width: 100%;
+            padding: 13px;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #e6a817;
+            color: #000;
+        }
+        .btn-primary:hover { background: #f0b828; }
+        .btn-primary:disabled { background: #555; color: #999; cursor: not-allowed; }
+        .error-msg {
+            color: #f55;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+        .success-msg {
+            color: #5f5;
+            font-size: 13px;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #888;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .back-link:hover { color: #e6a817; }
+        @media (max-width: 768px) {
+            .register-container { padding: 30px 20px; margin: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo">
+            <h1>🍊 2b2t橘子商店</h1>
+            <p>注册账号，开启你的冒险</p>
+        </div>
+
+        <div class="form-group">
+            <label>用户名</label>
+            <input type="text" id="regName" placeholder="请输入用户名（2-20位）" maxlength="20">
+            <div class="error-msg" id="errName"></div>
+        </div>
+        <div class="form-group">
+            <label>密码</label>
+            <input type="password" id="regPwd" placeholder="请输入密码（至少6位，不能过于简单）">
+            <div class="error-msg" id="errPwd"></div>
+        </div>
+        <div class="form-group">
+            <label>确认密码</label>
+            <input type="password" id="regPwd2" placeholder="请再次输入密码">
+            <div class="error-msg" id="errPwd2"></div>
+        </div>
+        <button class="btn btn-primary" id="submitBtn" onclick="submitRegister()">注 册</button>
+        <div class="success-msg" id="successMsg"></div>
+
+        <a class="back-link" href="/login">← 返回登录</a>
+    </div>
+
+    <script>
+        const API = window.location.origin + '/api';
+
+        function showError(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+        function hideError(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // 密码强度检查：不能过于简单
+        function isWeakPassword(pwd) {
+            // 至少包含以下3种之一：大写字母、小写字母、数字、特殊字符
+            const hasUpper = /[A-Z]/.test(pwd);
+            const hasLower = /[a-z]/.test(pwd);
+            const hasDigit = /\d/.test(pwd);
+            const hasSpecial = /[^a-zA-Z0-9]/.test(pwd);
+            const strength = [hasUpper, hasLower, hasDigit, hasSpecial].filter(Boolean).length;
+            return strength < 2; // 必须至少包含2种字符类型
+        }
+
+        async function submitRegister() {
+            const name = document.getElementById('regName').value.trim();
+            const pwd = document.getElementById('regPwd').value;
+            const pwd2 = document.getElementById('regPwd2').value;
+
+            hideError('errName');
+            hideError('errPwd');
+            hideError('errPwd2');
+
+            let valid = true;
+
+            if (!name || name.length < 2) {
+                showError('errName', '请输入至少2个字符的用户名');
+                valid = false;
+            } else if (name.length > 20) {
+                showError('errName', '用户名最多20个字符');
+                valid = false;
+            }
+
+            if (!pwd || pwd.length < 6) {
+                showError('errPwd', '密码至少6位');
+                valid = false;
+            } else if (isWeakPassword(pwd)) {
+                showError('errPwd', '密码不能过于简单，需包含至少2种字符（大小写/数字/特殊符号）');
+                valid = false;
+            }
+
+            if (pwd !== pwd2) {
+                showError('errPwd2', '两次密码不一致');
+                valid = false;
+            }
+
+            if (!valid) return;
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = '注册中...';
+
+            try {
+                const res = await fetch(API + '/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, pwd })
+                });
+                const data = await res.json();
+                if (data.error) {
+                    showError('errName', data.error);
+                    btn.disabled = false;
+                    btn.textContent = '注 册';
+                    return;
+                }
+                document.getElementById('successMsg').textContent = '✅ 注册成功！正在跳转到登录页...';
+                document.getElementById('successMsg').style.display = 'block';
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+            } catch (e) {
+                showError('errName', '服务器连接失败，请稍后重试');
+                btn.disabled = false;
+                btn.textContent = '注 册';
+            }
+        }
+
+        // Enter键提交
+        document.getElementById('regPwd2').addEventListener('keypress', e => {
+            if (e.key === 'Enter') submitRegister();
+        });
+    </script>
+</body>
+</html>

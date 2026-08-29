@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>找回密码 - 2b2t橘子商店</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1a1a2e;
+            color: #fff;
+            font-family: 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: #16213e;
+            border: 2px solid #e6a817;
+            border-radius: 8px;
+            padding: 40px;
+            width: 420px;
+            max-width: 90%;
+            box-shadow: 0 0 30px rgba(230,168,23,0.2);
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo h1 {
+            font-size: 24px;
+            color: #e6a817;
+            text-shadow: 2px 2px 0 #000;
+        }
+        .logo p {
+            color: #888;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            background: #0f0f23;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #e6a817;
+        }
+        .code-row {
+            display: flex;
+            gap: 10px;
+        }
+        .code-row input {
+            flex: 1;
+        }
+        .btn-send {
+            padding: 12px 20px;
+            background: #e6a817;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .btn-send:hover { background: #f0b828; }
+        .btn-send:disabled { background: #666; color: #999; cursor: not-allowed; }
+        .btn {
+            width: 100%;
+            padding: 13px;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+        .btn-primary { background: #e6a817; color: #000; }
+        .btn-primary:hover { background: #f0b828; }
+        .error-msg { color: #f55; font-size: 12px; margin-top: 4px; display: none; }
+        .success-msg { color: #5f5; font-size: 13px; margin-top: 10px; display: none; text-align: center; }
+        .links { margin-top: 20px; text-align: center; }
+        .links a { color: #888; font-size: 13px; text-decoration: none; margin: 0 10px; }
+        .links a:hover { color: #e6a817; }
+        .step { display: none; }
+        .step.active { display: block; }
+        @media (max-width: 768px) {
+            .container { padding: 30px 20px; margin: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>🍊 找回密码</h1>
+            <p>通过邮箱验证重置密码</p>
+        </div>
+        
+        <!-- 步骤1: 输入邮箱 -->
+        <div class="step active" id="step1">
+            <div class="form-group">
+                <label>注册邮箱</label>
+                <input type="text" id="resetEmail" placeholder="请输入注册时的QQ号" inputmode="numeric" maxlength="12">
+                <div class="error-msg" id="errEmail"></div>
+            </div>
+            <button class="btn btn-primary" onclick="sendCode()">发送验证码</button>
+            <div class="links">
+                <a href="/login">返回登录</a>
+                <a href="/">回到商店</a>
+            </div>
+        </div>
+        
+        <!-- 步骤2: 输入验证码和新密码 -->
+        <div class="step" id="step2">
+            <div class="form-group">
+                <label>邮箱</label>
+                <input type="email" id="confirmEmail" readonly>
+            </div>
+            <div class="form-group">
+                <label>验证码</label>
+                <div class="code-row">
+                    <input type="text" id="verifyCode" placeholder="请输入6位验证码" maxlength="6">
+                    <button class="btn-send" id="resendBtn" onclick="sendCode()" style="display:none;">重新发送</button>
+                </div>
+                <div class="error-msg" id="errCode"></div>
+            </div>
+            <div class="form-group">
+                <label>新密码</label>
+                <input type="password" id="newPwd" placeholder="请输入新密码（至少6位）">
+                <div class="error-msg" id="errNewPwd"></div>
+            </div>
+            <div class="form-group">
+                <label>确认密码</label>
+                <input type="password" id="confirmPwd" placeholder="请再次输入新密码">
+                <div class="error-msg" id="errConfirmPwd"></div>
+            </div>
+            <button class="btn btn-primary" onclick="resetPassword()">重置密码</button>
+            <div class="success-msg" id="successMsg"></div>
+            <div class="links">
+                <a href="/login">返回登录</a>
+                <a href="/">回到商店</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        const API = window.location.origin + '\/api';
+        let currentEmail = '';
+        let countdown = 0;
+        let countdownTimer = null;
+        
+        function showError(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+        function hideErrors() {
+            document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
+        }
+        function showSuccess(msg) {
+            const el = document.getElementById('successMsg');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+        function startCountdown() {
+            countdown = 60;
+            const btn = document.getElementById('resendBtn');
+            btn.disabled = true;
+            btn.textContent = countdown + '秒后重试';
+            btn.style.display = 'inline-block';
+            countdownTimer = setInterval(() => {
+                countdown--;
+                btn.textContent = countdown + '秒后重试';
+                if (countdown <= 0) {
+                    clearInterval(countdownTimer);
+                    btn.disabled = false;
+                    btn.textContent = '重新发送';
+                }
+            }, 1000);
+        }
+        async function sendCode() {
+            const qq = document.getElementById('resetEmail').value.trim();
+            if (!qq) { showError('errEmail', '请输入QQ号'); return; }
+            const qqRe = /^[1-9]d{4,11}$/;
+            if (!qqRe.test(qq)) { showError('errEmail', '请输入正确的QQ号（5-12位数字）'); return; }
+            hideErrors();
+            // 立即禁用按钮
+            const btn = document.querySelector('.btn-send');
+            if (btn) { btn.disabled = true; btn.textContent = '发送中...'; }
+            const email = qq + '@qq.com';
+            try {
+                const res = await fetch(API + '\/send-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application\/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                if (data.error) {
+                    showError('errEmail', data.error);
+                    return;
+                }
+                currentEmail = email;
+                document.getElementById('confirmEmail').value = email;
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step2').classList.add('active');
+                startCountdown();
+            } catch (e) {
+                showError('errEmail', e.name === 'AbortError' ? '发送超时，请重试' : '发送失败，请检查网络');
+                if (btn) { btn.disabled = false; btn.textContent = '重新发送'; }
+            }
+        }
+        async function resetPassword() {
+            const code = document.getElementById('verifyCode').value.trim();
+            const newPwd = document.getElementById('newPwd').value;
+            const confirmPwd = document.getElementById('confirmPwd').value;
+            hideErrors();
+            if (!code || code.length !== 6) {
+                showError('errCode', '请输入6位验证码');
+                return;
+            }
+            if (!newPwd || newPwd.length < 6) {
+                showError('errNewPwd', '密码长度至少6位');
+                return;
+            }
+            if (newPwd !== confirmPwd) {
+                showError('errConfirmPwd', '两次密码输入不一致');
+                return;
+            }
+            try {
+                const res = await fetch(API + '\/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application\/json' },
+                    body: JSON.stringify({ email: currentEmail, code, newPassword: newPwd })
+                });
+                const data = await res.json();
+                if (data.error) {
+                    showError('errCode', data.error);
+                    return;
+                }
+                showSuccess('✅ 密码重置成功！即将跳转到登录页...');
+                setTimeout(() => {
+                    window.location.href = '\/login';
+                }, 2000);
+            } catch (e) {
+                showError('errCode', '无法连接服务器');
+            }
+        }
+        // Enter键支持
+        document.getElementById('verifyCode').addEventListener('keydown', e => {
+            if (e.key === 'Enter') resetPassword();
+        });
+        document.getElementById('newPwd').addEventListener('keydown', e => {
+            if (e.key === 'Enter') document.getElementById('confirmPwd').focus();
+        });
+    </script>
+</body>
+</html>

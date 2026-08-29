@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理后台 - 2b2t橘子商店</title>
+<style>
+:root { --primary: #ff8c00; --primary-dark: #e67e00; --bg: #f0f2f5; --card-bg: #ffffff; --text: #2d3436; --text-light: #636e72; --success: #00b894; --danger: #e17055; --warning: #fdcb6e; --shadow: 0 2px 16px rgba(0,0,0,0.06); --radius: 14px; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+.navbar { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; padding: 0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(255,140,0,0.3); position: sticky; top: 0; z-index: 100; }
+.navbar-inner { max-width: 1280px; margin: 0 auto; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.navbar h1 { font-size: 20px; font-weight: 700; }
+.navbar a { color: #fff; text-decoration: none; background: rgba(255,255,255,0.2); padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; transition: all 0.3s; backdrop-filter: blur(10px); }
+.navbar a:hover { background: rgba(255,255,255,0.35); transform: translateY(-1px); }
+.container { max-width: 1280px; margin: 30px auto; padding: 0 24px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 30px; }
+.stat-card { background: var(--card-bg); border-radius: var(--radius); padding: 24px; text-align: center; box-shadow: var(--shadow); transition: transform 0.3s; }
+.stat-card:hover { transform: translateY(-3px); }
+.stat-card .num { font-size: 36px; font-weight: 800; color: var(--primary); line-height: 1; }
+.stat-card .label { color: var(--text-light); font-size: 13px; margin-top: 10px; font-weight: 500; }
+.card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 28px; margin-bottom: 24px; }
+.card h2 { color: var(--text); margin-bottom: 20px; font-size: 18px; font-weight: 700; border-bottom: 3px solid var(--primary); padding-bottom: 12px; display: inline-block; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+th { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+th:first-child { border-radius: 10px 0 0 0; }
+th:last-child { border-radius: 0 10px 0 0; }
+tr:hover { background: #fff8f0; }
+.badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.badge-on { background: #d4edda; color: #155724; }
+.badge-off { background: #f8d7da; color: #721c24; }
+.badge-pending { background: #fff3cd; color: #856404; }
+.badge-completed { background: #d4edda; color: #155724; }
+.btn-sm { padding: 7px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; margin-right: 6px; transition: all 0.2s; }
+.btn-sm:hover { transform: translateY(-1px); }
+.btn-edit { background: #3498db; color: #fff; }
+.btn-edit:hover { background: #2980b9; }
+.btn-delete { background: var(--danger); color: #fff; }
+.btn-delete:hover { background: #d35400; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #00a381; }
+.form-row { display: flex; gap: 14px; margin-bottom: 14px; }
+.form-row input, .form-row select { flex: 1; padding: 11px 14px; border: 2px solid #e8e8e8; border-radius: 10px; font-size: 14px; transition: border-color 0.3s; }
+.form-row input:focus, .form-row select:focus { outline: none; border-color: var(--primary); }
+.tab-nav { display: flex; gap: 10px; margin-bottom: 24px; background: var(--card-bg); padding: 8px; border-radius: 12px; box-shadow: var(--shadow); }
+.tab-btn { padding: 12px 28px; border: none; background: transparent; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text-light); transition: all 0.3s; }
+.tab-btn:hover { background: #f5f5f5; color: var(--text); }
+.tab-btn.active { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; box-shadow: 0 4px 12px rgba(255,140,0,0.3); }
+.loading { text-align: center; padding: 60px; color: var(--text-light); }
+.loading::after { content: ''; display: block; width: 36px; height: 36px; border: 3px solid #e0e0e0; border-top-color: var(--primary); border-radius: 50%; margin: 16px auto 0; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-row { text-align: center; color: var(--text-light); padding: 30px !important; }
+.product-img-sm { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
+@media (max-width: 768px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .tab-nav { overflow-x: auto; }
+  table { font-size: 12px; }
+  th, td { padding: 10px 8px; }
+}
+</style>
+</head>
+<body>
+<div class="navbar">
+  <div class="navbar-inner">
+    <h1>🍊 橘子商店 · 管理后台</h1>
+    <a href="/" target="_blank">访问前台</a>
+  </div>
+</div>
+<div class="container">
+  <div class="loading" id="loading">加载中...</div>
+  <div id="main" style="display:none;">
+    <div class="stats">
+      <div class="stat-card"><div class="num" id="stat-products">0</div><div class="label">商品总数</div></div>
+      <div class="stat-card"><div class="num" id="stat-orders">0</div><div class="label">订单总数</div></div>
+      <div class="stat-card"><div class="num" id="stat-users">0</div><div class="label">用户数</div></div>
+      <div class="stat-card"><div class="num" id="stat-stock">0</div><div class="label">总库存</div></div>
+    </div>
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="showTab('products')">📦 商品管理</button>
+      <button class="tab-btn" onclick="showTab('orders')">📋 订单管理</button>
+      <button class="tab-btn" onclick="showTab('users')">👥 用户管理</button>
+    </div>
+    <div class="card" id="tab-products">
+      <h2>商品列表</h2>
+      <button class="btn-sm btn-success" onclick="showAddProduct()" style="margin-bottom:16px;">+ 添加商品</button>
+      <div id="add-form" style="display:none;background:#f8f9fa;padding:20px;border-radius:12px;margin-bottom:16px;border:2px dashed #e0e0e0;">
+        <h3 style="margin-bottom:14px;font-size:15px;color:var(--text);">➕ 添加新商品</h3>
+        <div class="form-row"><input id="new-name" placeholder="商品名称"></div>
+        <div class="form-row"><input id="new-price" type="number" placeholder="价格(元)"><select id="new-cat"><option value="armor">护甲</option><option value="weapon">武器</option><option value="enchant">附魔</option><option value="potion">药水</option><option value="material">材料</option></select></div>
+        <div class="form-row"><input id="new-qty" type="number" placeholder="库存数量"><input id="new-desc" placeholder="商品描述"></div>
+        <div class="form-row"><label style="font-size:13px;color:var(--text-light);align-self:center;">商品图片</label><input type="file" id="new-img-file" accept="image/*" style="font-size:13px;"></div>
+        <div style="color:#888;font-size:12px;margin-bottom:10px;" id="img-upload-status"></div>
+        <div><button class="btn-sm btn-success" onclick="addProduct()">💾 保存</button> <button class="btn-sm btn-edit" onclick="document.getElementById('add-form').style.display='none'">取消</button></div>
+      </div>
+      <div style="overflow-x:auto;"><table><thead><tr><th>ID</th><th>图片</th><th>名称</th><th>分类</th><th>价格</th><th>库存</th><th>状态</th><th>操作</th></tr></thead><tbody id="product-tbody"></tbody></table></div>
+    </div>
+    <div class="card" id="tab-orders" style="display:none;">
+      <h2>订单列表</h2>
+      <div style="overflow-x:auto;"><table><thead><tr><th>订单ID</th><th>用户</th><th>商品</th><th>金额</th><th>状态</th><th>时间</th></tr></thead><tbody id="order-tbody"></tbody></table></div>
+    </div>
+    <div class="card" id="tab-users" style="display:none;">
+      <h2>用户管理</h2>
+      <div id="super-admin-warning" style="display:none;background:#fff3cd;padding:12px;border-radius:8px;margin-bottom:16px;font-size:13px;color:#856404;">⚠️ 您当前以超级管理员身份登录，可升降级其他管理员。</div>
+      <div style="overflow-x:auto;"><table><thead><tr><th>ID</th><th>用户名</th><th>邮箱</th><th>密码</th><th>管理员</th><th>操作</th><th>注册时间</th></tr></thead><tbody id="user-tbody"></tbody></table></div>
+    </div>
+  </div>
+</div>
+<script>
+const API = 'https://orange-shop-production-0c13.up.railway.app';
+const KEY = 'dev-admin-key-2025';
+// 支持两种访问方式：1. 已登录用户 2. 带 ?key= 参数直接访问
+let token = localStorage.getItem('token');
+let adminKey = new URLSearchParams(window.location.search).get('key');
+if (adminKey) localStorage.setItem('adminKey', adminKey);
+adminKey = adminKey || localStorage.getItem('adminKey');
+if (!token && !adminKey) { window.location.href = '/login'; }
+async function authFetch(url, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  else if (adminKey) headers['x-admin-key'] = adminKey;
+  const res = await fetch(url, { ...opts, headers });
+  if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = '/login'; }
+  return res.json();
+}
+function showTab(name) {
+  document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+  document.getElementById('tab-' + name).style.display = 'block';
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+function escHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function getAuthHeaders() {
+  const h = { 'Content-Type': 'application/json' };
+  if (token) h['Authorization'] = 'Bearer ' + token;
+  else if (adminKey) h['x-admin-key'] = adminKey;
+  return h;
+}
+// 上传文件用：不手动设 Content-Type，让浏览器自动带 multipart boundary
+function getAuthHeadersForUpload() {
+  const h = {};
+  if (token) h['Authorization'] = 'Bearer ' + token;
+  else if (adminKey) h['x-admin-key'] = adminKey;
+  return h;
+}
+function renderProducts(products) {
+  const tbody = document.getElementById('product-tbody');
+  tbody.innerHTML = products.map(p => `<tr id="row-${p.id}">
+    <td style="color:#aaa;font-size:12px;">#${p.id}</td>
+    <td style="width:50px;">${p.image ? `<img src="${API}/${p.image}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;" onerror="this.style.display='none'">` : '<span style="color:#ccc;">无图</span>'}</td>
+    <td><input value="${escHtml(p.name)}" style="width:140px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:13px;" onchange="editField(${p.id},'name',this.value)"></td>
+    <td><span style="background:#f0f0f0;padding:3px 10px;border-radius:12px;font-size:12px;">${p.category}</span></td>
+    <td><input type="number" value="${p.price}" style="width:80px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:13px;" onchange="editField(${p.id},'price',this.value)"> <small style="color:var(--text-light);">元</small></td>
+    <td><input type="number" value="${p.quantity}" style="width:70px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:13px;" onchange="editField(${p.id},'quantity',this.value)"></td>
+    <td><span class="badge ${p.available ? 'badge-on' : 'badge-off'}">${p.available ? '在售' : '缺货'}</span></td>
+    <td><button class="btn-sm btn-edit" onclick="toggleProduct(${p.id})">${p.available ? '下架' : '上架'}</button> <button class="btn-sm btn-delete" onclick="deleteProduct(${p.id})">删除</button></td>
+  </tr>`).join('');
+  document.getElementById('stat-products').textContent = products.length;
+  document.getElementById('stat-stock').textContent = products.reduce((s, p) => s + p.quantity, 0);
+}
+async function editField(id, field, value) {
+  try {
+    await fetch(API + '/api/products/' + id, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({ [field]: field === 'price' || field === 'quantity' ? parseFloat(value) : value }) });
+    loadAll();
+  } catch(e) { showToast('保存失败', 'error'); }
+}
+function renderOrders(orders) {
+  const tbody = document.getElementById('order-tbody');
+  tbody.innerHTML = orders.map(o => `<tr>
+    <td style="font-size:11px;color:#aaa;font-family:monospace;">${escHtml(o.id.slice(0,16))}...</td>
+    <td style="font-weight:600;">${escHtml(o.userName)}</td>
+    <td>${o.items.map(i=>escHtml(i.name)).join(', ')}</td>
+    <td style="color:var(--primary);font-weight:700;">${o.totalAmount}</td>
+    <td><span class="badge badge-${o.status === 'completed' ? 'completed' : 'pending'}">${o.status}</span></td>
+    <td style="font-size:12px;color:var(--text-light);">${new Date(o.createdAt).toLocaleString('zh-CN')}</td>
+  </tr>`).join('') || '<tr><td colspan="6" class="empty-row">暂无订单</td></tr>';
+  document.getElementById('stat-orders').textContent = orders.length;
+}
+function renderUsers(users) {
+  const tbody = document.getElementById('user-tbody');
+  const isSuper = users.some(u => u.super_admin);
+  document.getElementById('super-admin-warning').style.display = isSuper ? 'block' : 'none';
+  tbody.innerHTML = users.map(u => `<tr>
+    <td>${u.id}</td>
+    <td style="font-weight:600;">${escHtml(u.name)}</td>
+    <td style="font-size:13px;color:var(--text-light);">${escHtml(u.email)}</td>
+    <td style="font-size:12px;font-family:monospace;color:#666;">${escHtml(u.pwd_plain || '—')}</td>
+    <td>${u.is_admin ? '<span class="badge badge-on">' + (u.super_admin ? '超级管理员' : '管理员') + '</span>' : '<span style="color:#aaa;">普通用户</span>'}</td>
+    <td>${u.super_admin ? '<span style="color:#aaa;font-size:12px;">—</span>' :
+      (u.is_admin ? `<button class="btn-sm btn-delete" onclick="demoteUser(${u.id},'${escHtml(u.name)}')">降级</button>` :
+      `<button class="btn-sm btn-edit" onclick="promoteUser(${u.id},'${escHtml(u.name)}')">升级</button>`)
+    }</td>
+    <td style="font-size:12px;color:var(--text-light);">${new Date(u.created_at).toLocaleString('zh-CN')}</td>
+  </tr>`).join('');
+  document.getElementById('stat-users').textContent = users.length;
+}
+async function promoteUser(userId, name) {
+  if (!confirm('确定将 ' + name + ' 提升为管理员？')) return;
+  await fetch(API + '/api/admin/promote', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ username: name }) });
+  loadAll();
+}
+async function demoteUser(userId, name) {
+  if (!confirm('确定将 ' + name + ' 降级为普通用户？')) return;
+  await fetch(API + '/api/admin/demote', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ username: name }) });
+  loadAll();
+}
+async function loadAll() {
+  try {
+    const [products, orders, users] = await Promise.all([
+      authFetch(API + '/api/products'),
+      authFetch(API + '/api/orders'),
+      authFetch(API + '/api/admin/users?key=' + KEY)
+    ]);
+    renderProducts(products);
+    renderOrders(orders);
+    renderUsers(users);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('main').style.display = 'block';
+  } catch(e) { console.error(e); document.getElementById('loading').textContent = '加载失败，请刷新重试'; }
+}
+function showAddProduct() { document.getElementById('add-form').style.display = 'block'; }
+async function addProduct() {
+  const name = document.getElementById('new-name').value.trim();
+  const price = parseFloat(document.getElementById('new-price').value);
+  const qty = parseInt(document.getElementById('new-qty').value);
+  const cat = document.getElementById('new-cat').value;
+  const desc = document.getElementById('new-desc').value.trim();
+  const imgFile = document.getElementById('new-img-file').files[0];
+  if (!name || isNaN(price) || isNaN(qty)) { alert('请填写完整信息'); return; }
+  let imagePath = '';
+  if (imgFile) {
+    const status = document.getElementById('img-upload-status');
+    status.textContent = '⏳ 上传图片中...';
+    const form = new FormData();
+    form.append('image', imgFile);
+    const res = await fetch(API + '/api/upload', { method: 'POST', headers: getAuthHeadersForUpload(), body: form });
+    const data = await res.json();
+    if (data.url) { imagePath = data.url; status.textContent = '✅ 图片已上传: ' + data.url; }
+    else { alert('图片上传失败: ' + (data.error || '未知错误')); return; }
+  }
+  await fetch(API + '/api/products', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ name, category: cat, price, quantity: qty, desc, image: imagePath }) });
+  document.getElementById('add-form').style.display = 'none';
+  ['new-name','new-price','new-qty','new-desc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('new-img-file').value = '';
+  document.getElementById('img-upload-status').textContent = '';
+  loadAll();
+}
+async function toggleProduct(id) {
+  const products = await authFetch(API + '/api/products');
+  const p = products.find(x => x.id === id);
+  if (p) await fetch(API + '/api/products/' + id, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({ available: !p.available }) });
+  loadAll();
+}
+async function deleteProduct(id) {
+  if (!confirm('确定删除此商品？')) return;
+  await fetch(API + '/api/products/' + id, { method: 'DELETE', headers: getAuthHeaders() });
+  loadAll();
+}
+loadAll();
+</script>
+</body>
+</html>

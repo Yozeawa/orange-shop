@@ -1,0 +1,6 @@
+products/
+users.json
+orders.json
+codes.json
+node_modules/
+*.log

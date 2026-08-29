@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 2b2t橘子商店</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1a1a2e;
+            color: #fff;
+            font-family: 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: #16213e;
+            border: 2px solid #e6a817;
+            border-radius: 8px;
+            padding: 40px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 0 30px rgba(230,168,23,0.2);
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo h1 {
+            font-size: 28px;
+            color: #e6a817;
+            text-shadow: 2px 2px 0 #000;
+        }
+        .logo p {
+            color: #888;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            background: #0f0f23;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus {
+            border-color: #e6a817;
+        }
+        .btn {
+            width: 100%;
+            padding: 13px;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #e6a817;
+            color: #000;
+        }
+        .btn-primary:hover { background: #f0b828; }
+        .error-msg {
+            color: #f55;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+        .links {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .links a {
+            color: #888;
+            font-size: 13px;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .links a:hover { color: #e6a817; }
+        .auto-login-msg {
+            color: #5f5;
+            font-size: 13px;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            .logo h1 { font-size: 24px; }
+            .logo p { font-size: 12px; }
+            .form-group input { font-size: 16px; padding: 14px 16px; }
+            .btn { padding: 15px; font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🍊 2b2t橘子商店</h1>
+            <p>欢迎回来，冒险者</p>
+        </div>
+        <div class="form-group">
+            <label>用户名</label>
+            <input type="text" id="loginName" placeholder="请输入用户名" autocomplete="username">
+            <div class="error-msg" id="errName"></div>
+        </div>
+        <div class="form-group">
+            <label>密码</label>
+            <input type="password" id="loginPwd" placeholder="请输入密码" autocomplete="current-password">
+            <div class="error-msg" id="errPwd"></div>
+        </div>
+        <button class="btn btn-primary" onclick="login()">登 录</button>
+        <div class="auto-login-msg" id="autoMsg"></div>
+        <div class="links">
+            <a href="/register">注册新账号</a>
+            
+            <a href="/">回到商店</a>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin + '/api';
+
+        // 检查是否已登录
+        if (localStorage.getItem('authToken')) {
+            window.location.href = '/';
+        }
+
+        // Enter键登录
+        document.getElementById('loginPwd').addEventListener('keydown', e => {
+            if (e.key === 'Enter') login();
+        });
+        document.getElementById('loginName').addEventListener('keydown', e => {
+            if (e.key === 'Enter') document.getElementById('loginPwd').focus();
+        });
+
+        function showError(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+        function hideErrors() {
+            document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
+        }
+
+        async function login() {
+            const name = document.getElementById('loginName').value.trim();
+            const pwd = document.getElementById('loginPwd').value;
+            hideErrors();
+
+            if (!name) { showError('errName', '请输入用户名'); return; }
+            if (!pwd) { showError('errPwd', '请输入密码'); return; }
+
+            try {
+                const res = await fetch(`${API}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, pwd })
+                });
+                const data = await res.json();
+                if (data.error) {
+                    showError('errName', data.error);
+                    return;
+                }
+                // 保存token
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('authUser', JSON.stringify(data.user));
+
+                const msgEl = document.getElementById('autoMsg');
+                msgEl.textContent = '✅ 登录成功！正在进入...';
+                msgEl.style.display = 'block';
+
+                // 判断是否为管理员
+                if (data.isAdmin) {
+                    setTimeout(() => { window.location.href = '/admin?key=dev-admin-key-2025'; }, 800);
+                } else {
+                    setTimeout(() => { window.location.href = '/'; }, 800);
+                }
+            } catch (e) {
+                showError('errName', '无法连接服务器，请确保后端已启动');
+            }
+        }
+    </script>
+</body>
+</html>

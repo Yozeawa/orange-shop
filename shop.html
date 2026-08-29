@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2b2t橘子商店 - Minecraft 服务器商城</title>
+<style>
+:root { --primary: #ff8c00; --primary-dark: #e67e00; --primary-light: #fff3e0; --bg: #f8f9fc; --card-bg: #ffffff; --text: #2d3436; --text-light: #636e72; --text-muted: #95a5a6; --success: #00b894; --danger: #e17055; --warning: #fdcb6e; --shadow: 0 4px 20px rgba(0,0,0,0.06); --shadow-hover: 0 12px 40px rgba(255,140,0,0.15); --radius: 16px; --radius-sm: 10px; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* Header */
+.header { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; padding: 0; box-shadow: 0 4px 30px rgba(255,140,0,0.25); position: sticky; top: 0; z-index: 100; }
+.header-inner { max-width: 1280px; margin: 0 auto; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+.logo-icon { width: 44px; height: 44px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; backdrop-filter: blur(10px); }
+.logo-text h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.3px; }
+.logo-text p { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+.header-actions { display: flex; gap: 10px; align-items: center; }
+.admin-btn { background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; }
+.admin-btn:hover { background: linear-gradient(135deg, #c0392b, #a93226); transform: translateY(-1px); }
+.btn { padding: 10px 20px; border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.25s ease; display: inline-flex; align-items: center; gap: 6px; }
+.btn-ghost { background: rgba(255,255,255,0.15); color: #fff; backdrop-filter: blur(10px); }
+.btn-ghost:hover { background: rgba(255,255,255,0.25); transform: translateY(-1px); }
+.btn-white { background: #fff; color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.btn-white:hover { background: var(--primary-light); transform: translateY(-1px); }
+.btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; box-shadow: 0 4px 15px rgba(255,140,0,0.3); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,140,0,0.4); }
+.user-badge { background: rgba(255,255,255,0.15); padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.cart-btn { position: relative; }
+.cart-count { position: absolute; top: -6px; right: -6px; background: var(--danger); color: #fff; font-size: 11px; font-weight: 700; min-width: 20px; height: 20px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+
+/* Main Content */
+.main { flex: 1; max-width: 1280px; margin: 0 auto; padding: 32px 24px; width: 100%; }
+
+/* Hero Section */
+.hero { background: linear-gradient(135deg, #fff8f0 0%, #fff3e0 100%); border-radius: var(--radius); padding: 32px 40px; margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; box-shadow: var(--shadow); }
+.hero-content h2 { font-size: 28px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.hero-content p { color: var(--text-light); font-size: 15px; }
+.hero-stats { display: flex; gap: 24px; }
+.stat-item { text-align: center; }
+.stat-num { font-size: 24px; font-weight: 800; color: var(--primary); }
+.stat-label { font-size: 12px; color: var(--text-muted); }
+
+/* Search & Filter */
+.controls { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; align-items: center; }
+.search-box { flex: 1; min-width: 200px; position: relative; }
+.search-box input { width: 100%; padding: 12px 16px 12px 44px; border: 2px solid #e8e8e8; border-radius: var(--radius-sm); font-size: 14px; transition: all 0.3s; background: var(--card-bg); }
+.search-box input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(255,140,0,0.1); }
+.search-box::before { content: "🔍"; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; }
+.filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-tab { padding: 8px 18px; border: 2px solid #e8e8e8; background: var(--card-bg); border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-light); transition: all 0.25s; }
+.filter-tab:hover { border-color: var(--primary); color: var(--primary); }
+.filter-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+/* Products Grid */
+.section-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+.section-title::before { content: ""; width: 4px; height: 24px; background: var(--primary); border-radius: 2px; }
+.products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; }
+.product-card { background: var(--card-bg); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: all 0.35s ease; position: relative; border: 1px solid rgba(0,0,0,0.04); }
+.product-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-hover); }
+.product-img { width: 100%; height: 180px; background: linear-gradient(135deg, #fff8f0, #ffe0cc); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+.product-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+.product-card:hover .product-img img { transform: scale(1.08); }
+.product-badge { position: absolute; top: 12px; right: 12px; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.badge-rare { background: #3498db; color: #fff; }
+.badge-epic { background: #9b59b6; color: #fff; }
+.badge-legendary { background: #f39c12; color: #fff; }
+.badge-soldout { background: var(--text-light); color: #fff; }
+.product-info { padding: 18px; }
+.product-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.product-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; min-height: 32px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.product-footer { display: flex; justify-content: space-between; align-items: center; }
+.product-price { font-size: 20px; font-weight: 800; color: var(--primary); }
+.product-price small { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+.product-stock { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.product-stock.low { color: var(--danger); }
+.add-cart-btn { padding: 10px 16px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.25s; }
+.add-cart-btn:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(255,140,0,0.3); }
+.add-cart-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+.out-of-stock { opacity: 0.6; }
+.out-of-stock .product-card { pointer-events: none; }
+
+/* Cart Modal */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-overlay.active { display: flex; }
+.modal { background: #fff; border-radius: var(--radius); padding: 32px; width: 94%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 80px rgba(0,0,0,0.25); animation: modalIn 0.3s ease; }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.modal-header h2 { font-size: 20px; font-weight: 700; }
+.close-btn { width: 36px; height: 36px; border: none; background: #f5f5f5; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.close-btn:hover { background: #eee; transform: rotate(90deg); }
+.cart-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #f0f0f0; }
+.cart-item:last-child { border-bottom: none; }
+.cart-item-info { flex: 1; }
+.cart-item-name { font-weight: 600; font-size: 14px; }
+.cart-item-price { color: var(--primary); font-size: 13px; margin-top: 4px; }
+.cart-item-qty { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.qty-btn { width: 28px; height: 28px; border: 1px solid #ddd; background: #fff; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.qty-btn:hover { border-color: var(--primary); color: var(--primary); }
+.cart-total { margin-top: 24px; padding-top: 20px; border-top: 2px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+.cart-total-label { color: var(--text-light); font-size: 14px; }
+.cart-total-amount { font-size: 28px; font-weight: 800; color: var(--primary); }
+.cart-actions { margin-top: 24px; display: flex; gap: 12px; }
+.cart-actions .btn { flex: 1; justify-content: center; padding: 14px; }
+.empty-state { text-align: center; padding: 48px 20px; color: var(--text-muted); }
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+/* Login Modal */
+.login-form { display: flex; flex-direction: column; gap: 14px; }
+.login-form input { padding: 14px 16px; border: 2px solid #e8e8e8; border-radius: var(--radius-sm); font-size: 15px; transition: all 0.3s; }
+.login-form input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(255,140,0,0.1); }
+.error-msg { color: var(--danger); font-size: 13px; text-align: center; display: none; padding: 10px; background: #fff5f5; border-radius: 8px; }
+.login-link { text-align: center; margin-top: 16px; font-size: 14px; color: var(--text-light); }
+.login-link a { color: var(--primary); text-decoration: none; font-weight: 600; }
+.login-link a:hover { text-decoration: underline; }
+
+/* Toast */
+.toast { position: fixed; top: 24px; right: 24px; background: #2d3436; color: #fff; padding: 14px 24px; border-radius: var(--radius-sm); z-index: 2000; animation: slideIn 0.3s ease; box-shadow: 0 8px 30px rgba(0,0,0,0.2); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+@keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* Loading */
+.loading { text-align: center; padding: 80px 20px; color: var(--text-muted); }
+.spinner { width: 40px; height: 40px; border: 3px solid #e0e0e0; border-top-color: var(--primary); border-radius: 50%; margin: 20px auto 0; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Footer */
+.footer { text-align: center; padding: 32px 20px; color: var(--text-muted); font-size: 13px; border-top: 1px solid #eee; margin-top: 40px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-inner { padding: 12px 16px; }
+  .logo-text h1 { font-size: 16px; }
+  .logo-text p { display: none; }
+  .hero { flex-direction: column; text-align: center; padding: 24px; }
+  .hero-stats { justify-content: center; }
+  .main { padding: 20px 16px; }
+  .controls { flex-direction: column; }
+  .search-box { width: 100%; }
+  .filter-tabs { width: 100%; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
+  .products-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+  .modal { padding: 24px; width: 96%; }
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <div class="logo-icon">🍊</div>
+      <div class="logo-text">
+        <h1>2b2t橘子商店</h1>
+        <p>Minecraft 服务器商城</p>
+      </div>
+    </a>
+    <div class="header-actions">
+      <span class="user-badge" id="user-info" style="display:none;"></span>
+      <button class="btn btn-ghost admin-btn" id="admin-btn" style="display:none;" onclick="window.location.href='/admin?key=dev-admin-key-2025'">🛠️ 进入后台</button>
+      <button class="btn btn-ghost" id="login-btn" onclick="showLoginModal()">登录</button>
+      <button class="btn btn-ghost" id="logout-btn" style="display:none;" onclick="logout()">退出</button>
+      <button class="btn btn-white cart-btn" onclick="showCart()">
+        🛒 购物车
+        <span class="cart-count" id="cart-count">0</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="hero">
+    <div class="hero-content">
+      <h2>🍊 欢迎来到橘子商店</h2>
+      <p>高品质 Minecraft 装备、附魔、药水，让冒险更刺激！</p>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item"><div class="stat-num" id="stat-products">0</div><div class="stat-label">商品</div></div>
+      <div class="stat-item"><div class="stat-num" id="stat-users">0</div><div class="stat-label">玩家</div></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="搜索商品..." oninput="filterProducts()">
+    </div>
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-cat="all" onclick="setFilter('all')">全部</button>
+      <button class="filter-tab" data-cat="armor" onclick="setFilter('armor')">🛡️ 护甲</button>
+      <button class="filter-tab" data-cat="weapon" onclick="setFilter('weapon')">⚔️ 武器</button>
+      <button class="filter-tab" data-cat="enchant" onclick="setFilter('enchant')">✨ 附魔</button>
+      <button class="filter-tab" data-cat="potion" onclick="setFilter('potion')">🧪 药水</button>
+      <button class="filter-tab" data-cat="material" onclick="setFilter('material')">📦 材料</button>
+    </div>
+  </div>
+
+  <h2 class="section-title">热销商品</h2>
+  <div class="loading" id="loading"><div class="spinner"></div><p>加载中...</p></div>
+  <div class="products-grid" id="products-grid" style="display:none;"></div>
+</div>
+
+<div class="footer">© 2025 2b2t橘子商店 · Minecraft 服务器商城 · 所有权利保留</div>
+
+<!-- Cart Modal -->
+<div class="modal-overlay" id="cart-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🛒 购物车</h2>
+      <button class="close-btn" onclick="closeCart()">✕</button>
+    </div>
+    <div id="cart-items"></div>
+    <div class="cart-total">
+      <span class="cart-total-label">合计</span>
+      <span class="cart-total-amount" id="cart-total">¥0 元</span>
+    </div>
+    <div class="cart-actions">
+      <button class="btn btn-ghost" onclick="closeCart()">继续购物</button>
+      <button class="btn btn-primary" onclick="checkout()">立即结算</button>
+    </div>
+  </div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🔐 用户登录</h2>
+      <button class="close-btn" onclick="closeLoginModal()">✕</button>
+    </div>
+    <div class="login-form">
+      <input type="text" id="login-name" placeholder="用户名" autocomplete="username">
+      <input type="password" id="login-pwd" placeholder="密码" autocomplete="current-password">
+      <div class="error-msg" id="login-error"></div>
+      <button class="btn btn-primary" onclick="doLogin()" style="width:100%;justify-content:center;">登 录</button>
+      <div class="login-link"><a href="/register">没有账户？立即注册</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "https://orange-shop-production-0c13.up.railway.app";
+let cart = JSON.parse(localStorage.getItem("cart") || "{}");
+let currentUser = JSON.parse(localStorage.getItem("user") || "null");
+let products = [];
+let currentFilter = "all";
+let searchTerm = "";
+
+async function loadProducts() {
+  try {
+    const res = await fetch(API + "/api/products");
+    products = await res.json();
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("products-grid").style.display = "grid";
+    updateStats();
+    renderProducts();
+  } catch(e) {
+    document.getElementById("loading").innerHTML = "<p style='color:var(--danger);'>加载失败，请刷新重试</p>";
+  }
+}
+
+function updateStats() {
+  document.getElementById("stat-products").textContent = products.length;
+  document.getElementById("stat-users").textContent = Math.floor(Math.random() * 50) + 20; // 模拟
+}
+
+function filterProducts() {
+  searchTerm = document.getElementById("search-input").value.toLowerCase();
+  renderProducts();
+}
+
+function setFilter(cat) {
+  currentFilter = cat;
+  document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
+  document.querySelector(`.filter-tab[data-cat="${cat}"]`).classList.add("active");
+  renderProducts();
+}
+
+function getRarityBadge(rarity) {
+  const map = { rare: ["badge-rare","稀有"], epic: ["badge-epic","史诗"], legendary: ["badge-legendary","传说"] };
+  if (!map[rarity]) return "";
+  return `<span class="product-badge ${map[rarity][0]}">${map[rarity][1]}</span>`;
+}
+
+function fmtYuan(n) { return (Math.round(n * 100) / 100).toFixed(2); }
+
+function renderProducts() {
+  const grid = document.getElementById("products-grid");
+  let filtered = products;
+  if (currentFilter !== "all") filtered = filtered.filter(p => p.category === currentFilter);
+  if (searchTerm) filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm) || (p.desc && p.desc.toLowerCase().includes(searchTerm)));
+  
+  if (filtered.length === 0) {
+    grid.innerHTML = "<div class=\"empty-state\" style=\"grid-column:1/-1;\"><div class=\"icon\">📦</div><p>暂无商品</p></div>";
+    return;
+  }
+  
+  grid.innerHTML = filtered.map(p => `
+    <div class="product-card ${!p.available ? "out-of-stock" : ""}">
+      <div class="product-img">
+        ${p.image ? `<img src="${API}/${p.image}" onerror="this.parentElement.innerHTML='📦'" alt="${escHtml(p.name)}">` : '<span>📦</span>'}
+        ${p.available ? getRarityBadge(p.rarity) : '<span class="product-badge badge-soldout">已售罄</span>'}
+      </div>
+      <div class="product-info">
+        <div class="product-name">${escHtml(p.name)}</div>
+        <div class="product-desc">${escHtml(p.desc || "暂无描述")}</div>
+        <div class="product-footer">
+          <div>
+            <div class="product-price">¥${fmtYuan(p.price)} <small>元</small></div>
+            <div class="product-stock ${p.quantity <= 3 ? "low" : ""}">${p.available ? `库存: ${p.quantity}` : "已售罄"}</div>
+          </div>
+          ${p.available ? `<button class="add-cart-btn" onclick="addToCart(${p.id},1)">加入购物车</button>` : ""}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function escHtml(str) { const d=document.createElement("div"); d.textContent=str; return d.innerHTML; }
+
+function addToCart(productId, delta) {
+  const p = products.find(x => x.id === productId);
+  if (!p) return;
+  const current = cart[productId] || 0;
+  if (delta > 0 && current >= p.quantity) { showToast('库存不足，最多可购买 ' + p.quantity + ' 件', 'error'); return; }
+  cart[productId] = Math.max(0, current + delta);
+  if (cart[productId] < 1) delete cart[productId];
+  localStorage.setItem("cart", JSON.stringify(cart));
+  updateCartCount();
+  renderProducts();
+  if (delta > 0) showToast("✅ 已加入购物车", "success");
+  else if (delta < 0) showToast("− 已减少", "success");
+}
+
+function updateCartCount() {
+  const count = Object.values(cart).reduce((a, b) => a + b, 0);
+  const el = document.getElementById("cart-count");
+  el.textContent = count;
+  el.style.display = count > 0 ? "flex" : "none";
+}
+
+function showCart() {
+  const modal = document.getElementById("cart-modal");
+  const itemsEl = document.getElementById("cart-items");
+  let total = 0, html = "";
+  Object.keys(cart).map(Number).forEach(id => {
+    if (!cart[id] || cart[id] < 1) return;
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+    const subtotal = p.price * cart[id];
+    total += subtotal;
+    html += `<div class="cart-item">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${escHtml(p.name)}</div>
+        <div class="cart-item-price">¥${fmtYuan(p.price)} × ${cart[id]} = ¥${fmtYuan(subtotal)} <small>元</small></div>
+        <div class="cart-item-qty">
+          <button class="qty-btn" onclick="addToCart(${p.id},-1)">−</button>
+          <span>${cart[id]}</span>
+          <button class="qty-btn" onclick="addToCart(${p.id},1)">+</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  if (!html) html = "<div class=\"empty-state\"><div class=\"icon\">🛒</div><p>购物车为空</p></div>";
+  itemsEl.innerHTML = html;
+  document.getElementById("cart-total").textContent = "¥" + fmtYuan(total) + " 元";
+  modal.classList.add("active");
+}
+
+function closeCart() { document.getElementById("cart-modal").classList.remove("active"); }
+
+async function checkout() {
+  if (!currentUser) { closeCart(); showLoginModal(); return; }
+  const items = Object.entries(cart).filter(([_, q]) => q > 0).map(([id, qty]) => ({ productId: parseInt(id), quantity: qty }));
+  if (items.length === 0) { showToast("购物车为空", "error"); return; }
+  try {
+    const res = await fetch(API + "/api/checkout", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + currentUser.token }, body: JSON.stringify({ items }) });
+    const data = await res.json();
+    if (data.success) {
+      cart = {};
+      localStorage.setItem("cart", JSON.stringify(cart));
+      updateCartCount();
+      closeCart();
+      showToast("✅ 下单成功！订单号: " + data.orderId.slice(0,12) + "...", "success");
+      renderProducts();
+    } else {
+      showToast("❌ " + data.error, "error");
+    }
+  } catch(e) { showToast("网络错误", "error"); }
+}
+
+function showLoginModal() { document.getElementById("login-modal").classList.add("active"); }
+function closeLoginModal() { document.getElementById("login-modal").classList.remove("active"); }
+
+async function doLogin() {
+  const name = document.getElementById("login-name").value.trim();
+  const pwd = document.getElementById("login-pwd").value;
+  const errEl = document.getElementById("login-error");
+  errEl.style.display = "none";
+  if (!name || !pwd) { errEl.textContent = "请输入用户名和密码"; errEl.style.display = "block"; return; }
+  try {
+    const res = await fetch(API + "/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, pwd }) });
+    const data = await res.json();
+    if (data.success) {
+      currentUser = data.user;
+      currentUser.token = data.token;
+      localStorage.setItem("user", JSON.stringify(currentUser));
+      closeLoginModal();
+      updateAuthUI();
+      showToast("✅ 登录成功，欢迎 " + currentUser.name, "success");
+    } else {
+      errEl.textContent = data.error || "登录失败";
+      errEl.style.display = "block";
+    }
+  } catch(e) { errEl.textContent = "网络错误"; errEl.style.display = "block"; }
+}
+
+function logout() {
+  currentUser = null;
+  localStorage.removeItem("user");
+  updateAuthUI();
+  showToast("已退出登录");
+}
+
+function updateAuthUI() {
+  const loginBtn = document.getElementById("login-btn");
+  const logoutBtn = document.getElementById("logout-btn");
+  const adminBtn = document.getElementById("admin-btn");
+  const userInfo = document.getElementById("user-info");
+  if (currentUser) {
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "";
+    userInfo.style.display = "flex";
+    userInfo.innerHTML = "👤 " + currentUser.name + (currentUser.is_admin ? " <span style=\"background:var(--warning);color:#000;padding:2px 6px;border-radius:10px;font-size:10px;\">管理</span>" : "");
+    adminBtn.style.display = currentUser.is_admin ? "" : "none";
+  } else {
+    loginBtn.style.display = "";
+    logoutBtn.style.display = "none";
+    adminBtn.style.display = "none";
+    userInfo.style.display = "none";
+  }
+}
+
+function showToast(msg, type = "") {
+  const toast = document.createElement("div");
+  toast.className = "toast " + type;
+  toast.innerHTML = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = "0"; toast.style.transition = "opacity 0.3s"; setTimeout(() => toast.remove(), 300); }, 2500);
+}
+
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeCart(); closeLoginModal(); } });
+document.getElementById("login-pwd").addEventListener("keypress", e => { if (e.key === "Enter") doLogin(); });
+
+loadProducts();
+updateAuthUI();
+updateCartCount();
+</script>
+</body>
+</html>
