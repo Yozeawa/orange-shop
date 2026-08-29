@@ -8,6 +8,6 @@ services:
     healthCheckPath: /api/products
     envVars:
       - key: DATABASE_URL
-        sync: false
+        value: postgresql://neondb_owner:npg_czxE5VXl4PZT@ep-rapid-leaf-a5tgmamp-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require
       - key: ALLOWED_ORIGIN
         value: https://orange-shop-rrl.pages.dev
