@@ -129,12 +129,12 @@
         <button class="btn btn-primary" id="submitBtn" onclick="submitRegister()">注 册</button>
         <div class="success-msg" id="successMsg"></div>
 
-        <a class="back-link" href="/login">← 返回登录</a>
+        <a class="back-link" href="./login.html">← 返回登录</a>
     </div>
 
+    <script src="config.js"></script>
     <script>
-        const API = window.location.origin + '/api';
-
+        const API = (window.API_BASE || "https://orange-shop.onrender.com") + '/api';
         function showError(id, msg) {
             const el = document.getElementById(id);
             el.textContent = msg;

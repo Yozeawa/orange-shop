@@ -148,7 +148,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 <body>
 <div class="header">
   <div class="header-inner">
-    <a href="/" class="logo">
+    <a href="./" class="logo">
       <div class="logo-icon">🍊</div>
       <div class="logo-text">
         <h1>2b2t橘子商店</h1>
@@ -232,13 +232,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
       <input type="password" id="login-pwd" placeholder="密码" autocomplete="current-password">
       <div class="error-msg" id="login-error"></div>
       <button class="btn btn-primary" onclick="doLogin()" style="width:100%;justify-content:center;">登 录</button>
-      <div class="login-link"><a href="/register">没有账户？立即注册</a></div>
+      <div class="login-link"><a href="./register.html">没有账户？立即注册</a></div>
     </div>
   </div>
 </div>
 
+<script src="config.js"></script>
 <script>
-const API = "https://orange-shop-production-0c13.up.railway.app";
+const API = window.API_BASE || "https://orange-shop.onrender.com";
 let cart = JSON.parse(localStorage.getItem("cart") || "{}");
 let currentUser = JSON.parse(localStorage.getItem("user") || "null");
 let products = [];

@@ -1,0 +1,23 @@
+# ============================================================
+# Render Blueprint - 一键部署配置
+# 用法: 点击 https://render.com/deploy?repo=https://github.com/Yozeawa/orange-shop
+# 会在 Render 自动创建 Web Service（免费，无需绑卡）
+# ============================================================
+services:
+  - type: web
+    name: orange-shop
+    runtime: node
+    repo: https://github.com/Yozeawa/orange-shop
+    plan: free
+    region: ohio
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/products
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false   # 部署后在面板手动填 Neon 连接串
+      - key: ALLOWED_ORIGIN
+        value: https://yozeawa.github.io
+      - key: NODE_VERSION
+        value: 20

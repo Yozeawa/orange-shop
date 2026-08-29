@@ -131,15 +131,14 @@
         <button class="btn btn-primary" onclick="login()">登 录</button>
         <div class="auto-login-msg" id="autoMsg"></div>
         <div class="links">
-            <a href="/register">注册新账号</a>
-            
-            <a href="/">回到商店</a>
+            <a href="./register.html">注册新账号</a>
+            <a href="./">回到商店</a>
         </div>
     </div>
 
+    <script src="config.js"></script>
     <script>
-        const API = window.location.origin + '/api';
-
+        const API = (window.API_BASE || "https://orange-shop.onrender.com") + '/api';
         // 检查是否已登录
         if (localStorage.getItem('authToken')) {
             window.location.href = '/';

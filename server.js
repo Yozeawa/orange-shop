@@ -38,7 +38,7 @@ const SMTP_CONFIG = {
 const PASSWORD_SALT = 'orangeShop2025!@#';
 
 const app = express();
-const PORT = 3456;
+const PORT = process.env.PORT || 3456;
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '*';
 const DATA_FILE = path.join(__dirname, 'products.json');
 const USERS_FILE = path.join(__dirname, 'users.json');

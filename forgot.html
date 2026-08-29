@@ -125,8 +125,8 @@
             </div>
             <button class="btn btn-primary" onclick="sendCode()">发送验证码</button>
             <div class="links">
-                <a href="/login">返回登录</a>
-                <a href="/">回到商店</a>
+                <a href="./login.html">返回登录</a>
+                <a href="./">回到商店</a>
             </div>
         </div>
         
@@ -157,13 +157,14 @@
             <button class="btn btn-primary" onclick="resetPassword()">重置密码</button>
             <div class="success-msg" id="successMsg"></div>
             <div class="links">
-                <a href="/login">返回登录</a>
-                <a href="/">回到商店</a>
+                <a href="./login.html">返回登录</a>
+                <a href="./">回到商店</a>
             </div>
         </div>
     </div>
+    <script src="config.js"></script>
     <script>
-        const API = window.location.origin + '\/api';
+        const API = (window.API_BASE || "https://orange-shop.onrender.com") + '\/api';
         let currentEmail = '';
         let countdown = 0;
         let countdownTimer = null;

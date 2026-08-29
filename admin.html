@@ -64,7 +64,7 @@ tr:hover { background: #fff8f0; }
 <div class="navbar">
   <div class="navbar-inner">
     <h1>🍊 橘子商店 · 管理后台</h1>
-    <a href="/" target="_blank">访问前台</a>
+    <a href="./" target="_blank">访问前台</a>
   </div>
 </div>
 <div class="container">
@@ -106,8 +106,9 @@ tr:hover { background: #fff8f0; }
     </div>
   </div>
 </div>
+<script src="config.js"></script>
 <script>
-const API = 'https://orange-shop-production-0c13.up.railway.app';
+const API = window.API_BASE || 'https://orange-shop.onrender.com';
 const KEY = 'dev-admin-key-2025';
 // 支持两种访问方式：1. 已登录用户 2. 带 ?key= 参数直接访问
 let token = localStorage.getItem('token');
