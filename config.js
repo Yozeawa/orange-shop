@@ -1,5 +1,5 @@
 // ============================================================
-// 全局配置：后端 API 地址
-// 所有前端页面自动生效（shop/login/register/admin/forgot）
+// 全局配置：后端 API 地址（Render 部署后保持默认即可）
+// 如果 Render 分配了不同的域名，改这里，所有页面自动生效
 // ============================================================
-window.API_BASE = "https://orange-shop-production-0c13.up.railway.app";
+window.API_BASE = "https://orange-shop.onrender.com";
