@@ -26,8 +26,9 @@ async function initDatabase() {
       isPostgresMode = true;
       console.log('[DB] 连接到 PostgreSQL (Supabase)...');
       pgClient = new Client({
-        connectionString: dbUrl,
-        family: 4,
+        connectionString: dbUrl.replace(/&?channel_binding=[^&]*/g, ''),
+        ssl: { rejectUnauthorized: false },
+        connectionTimeoutMillis: 15000,
       });
       await pgClient.connect();
       useMySQL = true;
