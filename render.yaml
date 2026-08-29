@@ -1,22 +1,13 @@
-# ============================================================
-# Render Blueprint - 一键部署
-# 用法: https://render.com/deploy?repo=https://github.com/Yozeawa/orange-shop
-# ============================================================
 services:
   - type: web
     name: orange-shop
-    runtime: node
-    repo: https://github.com/Yozeawa/orange-shop
+    env: node
     plan: free
-    region: singapore
-    buildCommand: npm install
-    startCommand: node server.js
+    buildCommand: "npm install"
+    startCommand: "node server.js"
     healthCheckPath: /api/products
-    autoDeploy: true
     envVars:
       - key: DATABASE_URL
-        value: "postgresql://neondb_owner:npg_czxE5VXl4PZT@ep-rapid-leaf-a5tgmamp-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
+        sync: false
       - key: ALLOWED_ORIGIN
         value: https://orange-shop-rrl.pages.dev
-      - key: NODE_VERSION
-        value: 20
