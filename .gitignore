@@ -1,2 +1,22 @@
+# ---- 环境与密钥 ----
+.env
+.env.*
+*.env
+
+# ---- 数据与用户（含密码哈希/明文，绝不能进仓库）----
+users.json
+backup/
 backups/
-render.yaml.backup*
+*.bak
+*.bak*
+
+# ---- 依赖与构建产物 ----
+node_modules/
+package-lock.json
+
+# ---- 运行时文件 ----
+uploads/
+*.log
+
+# ---- 部署配置中的敏感备份 - palaver ----
+render.yaml.bak*

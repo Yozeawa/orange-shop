@@ -109,9 +109,8 @@ tr:hover { background: #fff8f0; }
 <script src="config.js"></script>
 <script>
 const API = window.API_BASE || 'https://orange-shop.onrender.com';
-const KEY = 'dev-admin-key-2025';
-// 支持两种访问方式：1. 已登录用户 2. 带 ?key= 参数直接访问
-let token = localStorage.getItem('token');
+// 支持两种访问方式：1. 已登录用户（Bearer token） 2. 带 ?key= 参数直接访问（外部管理密钥，通过环境变量配置）
+let token = localStorage.getItem('token') || localStorage.getItem('authToken');
 let adminKey = new URLSearchParams(window.location.search).get('key');
 if (adminKey) localStorage.setItem('adminKey', adminKey);
 adminKey = adminKey || localStorage.getItem('adminKey');
@@ -210,7 +209,7 @@ async function loadAll() {
     const [products, orders, users] = await Promise.all([
       authFetch(API + '/api/products'),
       authFetch(API + '/api/orders'),
-      authFetch(API + '/api/admin/users?key=' + KEY)
+      authFetch(API + '/api/admin/users')
     ]);
     renderProducts(products);
     renderOrders(orders);

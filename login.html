@@ -181,17 +181,16 @@
                     showError('errName', data.error);
                     return;
                 }
-                // 保存token
+// 保存token（兼容新旧键名）
                 localStorage.setItem('authToken', data.token);
+                localStorage.setItem('token', data.token);
                 localStorage.setItem('authUser', JSON.stringify(data.user));
-
                 const msgEl = document.getElementById('autoMsg');
                 msgEl.textContent = '✅ 登录成功！正在进入...';
                 msgEl.style.display = 'block';
-
-                // 判断是否为管理员
+                // 判断是否为管理员（后台数据接口由服务端校验权限，无需携带密钥）
                 if (data.isAdmin) {
-                    setTimeout(() => { window.location.href = '/admin?key=dev-admin-key-2025'; }, 800);
+                    setTimeout(() => { window.location.href = '/admin'; }, 800);
                 } else {
                     setTimeout(() => { window.location.href = '/'; }, 800);
                 }

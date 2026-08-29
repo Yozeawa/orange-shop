@@ -23,19 +23,24 @@ const db = require('./db_mysql');
 //   Microsoft账号 → 安全 → 高级安全选项 → 应用密码 → 创建新密码
 //   host: 'smtp.office365.com', port: 587, secure: false
 // ============================================================
+// SMTP 配置全部从环境变量读取（生产环境必须设置 SMTP_USER / SMTP_PASS / SMTP_HOST / SMTP_PORT）
 const SMTP_CONFIG = {
-  host: 'smtp.163.com',
-  port: 465,
-  secure: true,               // port 465 用 SSL
+  host: process.env.SMTP_HOST || 'smtp.163.com',
+  port: parseInt(process.env.SMTP_PORT || '465', 10),
+  secure: (process.env.SMTP_SECURE || 'true') === 'true', // port 465 用 SSL
   auth: {
-    user: 'foreigner0904@163.com',
-    pass: 'THvCz65KwkstrzHt',
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || '',
   },
 };
+// 未配置邮箱时给出警告（验证码功能将无法真正发送，只打印控制台）
+if (!SMTP_CONFIG.auth.user || !SMTP_CONFIG.auth.pass) {
+  console.warn('[SMTP] 未设置 SMTP_USER/SMTP_PASS，邮件功能不可用（验证码仅打印到控制台）');
+}
 // ============================================================
 
-// 盐值（生产环境应存储在环境变量中）
-const PASSWORD_SALT = 'orangeShop2025!@#';
+// 盐值（生产环境必须通过环境变量 PASSWORD_SALT 设置；未设置时使用运行时随机值，导致已存哈希全部失效）
+const PASSWORD_SALT = process.env.PASSWORD_SALT || crypto.randomBytes(32).toString('hex');
 
 const app = express();
 const PORT = process.env.PORT || 3456;
@@ -48,7 +53,7 @@ const ORDERS_FILE = path.join(__dirname, 'orders.json');
 // ========== 安全配置 ==========
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || crypto.randomBytes(32).toString('hex');
 const ADMIN_IP_WHITELIST = (process.env.ADMIN_IP_WHITELIST || '').split(',').filter(Boolean);
-const ADMIN_ACCESS_KEY = process.env.ADMIN_ACCESS_KEY || 'dev-admin-key-2025';
+const ADMIN_ACCESS_KEY = process.env.ADMIN_ACCESS_KEY || crypto.randomBytes(24).toString('base64url');
 
 // ========== 安全中间件 ==========
 
@@ -214,7 +219,7 @@ if (!fs.existsSync(USERS_FILE)) {
 }
 // Ensure default admin exists
 const _users = readUsers();
-const _adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+const _adminPassword = process.env.ADMIN_PASSWORD || crypto.randomBytes(9).toString('base64url');
 const _existingAdmin = _users.find(u => u.name === 'Admin');
 if (!_existingAdmin) {
   const _adminHash = hashPassword(_adminPassword, PASSWORD_SALT);
@@ -229,7 +234,7 @@ if (!_existingAdmin) {
     created_at: new Date().toISOString(),
   });
   writeUsers(_users);
-  console.log('[初始化] 已创建默认超级管理员账户: Admin / admin123');
+  console.log('[初始化] 已创建默认超级管理员账户: Admin（密码请通过环境变量 ADMIN_PASSWORD 设置，当前使用随机密码）');
 } else {
   // 确保 Admin 永远是 super_admin，且 pwdPlain 同步
   _existingAdmin.super_admin = true;
@@ -345,7 +350,20 @@ function requireSuperAdmin(req, res, next) {
   }
   next();
 }
-
+// 兼容认证：支持 密钥(key) 或 登录 token 两种方式访问管理页面/上传
+function requireAdminKeyOrToken(req, res, next) {
+  const key = req.query.key || req.headers["x-admin-key"];
+  if (key) {
+    try {
+      if (crypto.timingSafeEqual(Buffer.from(key, "utf8"), Buffer.from(ADMIN_ACCESS_KEY, "utf8"))) {
+        req.adminKeyVerified = true;
+        return next();
+      }
+    } catch (e) {}
+    return res.status(403).json({ error: "访问密钥无效" });
+  }
+  requireAuth(req, res, next);
+}
 // ========== API Routes: 商品 ==========
 
 app.get('/api/products', (req, res) => {
@@ -937,7 +955,8 @@ app.get('/api/admin/users', (req, res, next) => {
   }));
   res.json(users);
 });
-app.get("/admin", requireAdminKey, (req, res) => {
+app.get("/admin", (req, res) => {
+  // 管理页面本身是静态页面；数据接口均有 requireAuth+requireAdmin 保护，认证由前端 admin.html + API 层兜底
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
@@ -963,7 +982,7 @@ db.initDatabase().then(() => {
 });
 
 // 图片上传路由
-app.post('/api/upload', requireAdminKey, upload.single('image'), (req, res) => {
+app.post('/api/upload', requireAdminKeyOrToken, upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: '请选择图片' });
   }

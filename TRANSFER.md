@@ -2,7 +2,7 @@
 
 ## 项目基本信息
 - **仓库**: https://github.com/Yozeawa/orange-shop (注意：已迁移到 Yozeawa 组织)
-- **生产地址**: https://orange-shop-production-0c13.up.railway.app
+- **生产地址**: https://orange-shop-production-0c13.up.railway.app（已下线，迁移至新平台）
 - **平台**: Railway + GitHub Actions
 - **技术栈**: Node.js + Express + MySQL (via db_mysql.js)
 
@@ -53,7 +53,7 @@ git push origin main
 ### 问题 2: Admin API 认证缺陷
 **现象**: 使用 key 参数访问管理员接口返回 "未登录"
 ```
-curl "https://orange-shop-production-0c13.up.railway.app/api/admin/users?key=dev-admin-key-2025"
+curl "https://<部署域名>/api/admin/users?key=<ADMIN_ACCESS_KEY>"
 # 返回: {"error":"未登录"}
 ```
 
@@ -87,10 +87,9 @@ curl "https://orange-shop-production-0c13.up.railway.app/api/admin/users?key=dev
 ### 检查服务器状态
 ```bash
 # 测试公共 API
-curl -s https://orange-shop-production-0c13.up.railway.app/api/products | head -c 100
-
+curl -s https://<部署域名>/api/products | head -c 100
 # 测试验证码发送
-curl -s -X POST https://orange-shop-production-0c13.up.railway.app/api/send-code \
+curl -s -X POST https://<部署域名>/api/send-code \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com"}'
 
@@ -122,7 +121,7 @@ git push origin main
 | 变量名 | 说明 | 位置 |
 |--------|------|------|
 | DATABASE_URL | MySQL 连接字符串 | Railway Dashboard |
-| ADMIN_ACCESS_KEY | dev-admin-key-2025 | Railway Dashboard |
+| ADMIN_ACCESS_KEY | 见环境变量配置（生产环境通过 ADMIN_ACCESS_KEY 设置） | 部署平台 Dashboard |
 | RAILWAY_TOKEN | Railway 部署令牌 | GitHub Secrets |
 
 ---

@@ -2,7 +2,7 @@
 const { Client } = require('pg');
 const fs = require('fs');
 
-const dbUrl = 'postgresql://postgres:20110928Zxj!!%E2%80%A6@db.yofrmgfzjnmiyhxsytkf.supabase.co:5432/postgres';
+const dbUrl = process.env.DATABASE_URL || '';
 
 async function init() {
   const client = new Client({ connectionString: dbUrl });
