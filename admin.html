@@ -102,7 +102,7 @@ tr:hover { background: #fff8f0; }
     <div class="card" id="tab-users" style="display:none;">
       <h2>用户管理</h2>
       <div id="super-admin-warning" style="display:none;background:#fff3cd;padding:12px;border-radius:8px;margin-bottom:16px;font-size:13px;color:#856404;">⚠️ 您当前以超级管理员身份登录，可升降级其他管理员。</div>
-      <div style="overflow-x:auto;"><table><thead><tr><th>ID</th><th>用户名</th><th>邮箱</th><th>密码</th><th>管理员</th><th>操作</th><th>注册时间</th></tr></thead><tbody id="user-tbody"></tbody></table></div>
+      <div style="overflow-x:auto;"><table><thead><tr><th>ID</th><th>用户名</th><th>邮箱</th><th>管理员</th><th>操作</th><th>注册时间</th></tr></thead><tbody id="user-tbody"></tbody></table></div>
     </div>
   </div>
 </div>
@@ -112,8 +112,8 @@ const API = window.API_BASE || 'https://orange-shop.onrender.com';
 // 支持两种访问方式：1. 已登录用户（Bearer token） 2. 带 ?key= 参数直接访问（外部管理密钥，通过环境变量配置）
 let token = localStorage.getItem('token') || localStorage.getItem('authToken');
 let adminKey = new URLSearchParams(window.location.search).get('key');
-if (adminKey) localStorage.setItem('adminKey', adminKey);
-adminKey = adminKey || localStorage.getItem('adminKey');
+if (adminKey) sessionStorage.setItem('adminKey', adminKey);
+adminKey = adminKey || sessionStorage.getItem('adminKey');
 if (!token && !adminKey) { window.location.href = '/login'; }
 async function authFetch(url, opts = {}) {
   const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
@@ -184,7 +184,7 @@ function renderUsers(users) {
     <td>${u.id}</td>
     <td style="font-weight:600;">${escHtml(u.name)}</td>
     <td style="font-size:13px;color:var(--text-light);">${escHtml(u.email)}</td>
-    <td style="font-size:12px;font-family:monospace;color:#666;">${escHtml(u.pwd_plain || '—')}</td>
+    <td>
     <td>${u.is_admin ? '<span class="badge badge-on">' + (u.super_admin ? '超级管理员' : '管理员') + '</span>' : '<span style="color:#aaa;">普通用户</span>'}</td>
     <td>${u.super_admin ? '<span style="color:#aaa;font-size:12px;">—</span>' :
       (u.is_admin ? `<button class="btn-sm btn-delete" onclick="demoteUser(${u.id},'${escHtml(u.name)}')">降级</button>` :

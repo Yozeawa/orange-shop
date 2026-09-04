@@ -44,7 +44,8 @@ const PASSWORD_SALT = process.env.PASSWORD_SALT || crypto.randomBytes(32).toStri
 
 const app = express();
 const PORT = process.env.PORT || 3456;
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '*';
+// 安全：禁止通配符 *，必须由环境变量显式指定；默认拒绝所有跨域
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '';
 const DATA_FILE = path.join(__dirname, 'products.json');
 const USERS_FILE = path.join(__dirname, 'users.json');
 const CODES_FILE = path.join(__dirname, 'codes.json');
@@ -713,12 +714,12 @@ app.post('/api/login', (req, res) => {
   user.last_login = new Date().toISOString();
   writeUsers(users);
   console.log(`[登录] ${cleanName} (admin: ${user.is_admin})`);
+  // P0: 不再泄露明文密码
   res.json({
     success: true,
     token,
     user: { id: user.id, name: user.name, email: user.email, is_admin: user.is_admin },
     isAdmin: user.is_admin,
-    pwd_plain: user.pwdPlain || '',
   });
 });
 
@@ -951,7 +952,7 @@ app.get('/api/admin/users', (req, res, next) => {
   requireAuth(req, res, next);
 }, requireAdmin, (req, res) => {
   const users = readUsers().map(u => ({
-    id: u.id, name: u.name, email: u.email, is_admin: u.is_admin, super_admin: !!u.super_admin, pwd_plain: u.pwdPlain || '', created_at: u.created_at
+    id: u.id, name: u.name, email: u.email, is_admin: u.is_admin, super_admin: !!u.super_admin, created_at: u.created_at
   }));
   res.json(users);
 });

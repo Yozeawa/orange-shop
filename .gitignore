@@ -20,3 +20,14 @@ uploads/
 
 # ---- 部署配置中的敏感备份 - palaver ----
 render.yaml.bak*
+
+# ---- 运行时与敏感数据 ----
+.env
+.env.*
+*.bak
+*.bak*
+uploads/
+*.log
+codes.json
+users.json
+orders.json
